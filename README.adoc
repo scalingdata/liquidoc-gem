@@ -58,7 +58,7 @@ Give LiquiDoc (1) any proper YAML or JSON data file and (2) a template mapping a
 ----
 $ bundle exec liquidoc -c configs/cfg-sample.yml --stdout
 ----
-+
+
 [TIP]
 Repeat without the `--stdout` flag and you'll find the generated files in `_output/`.
 
@@ -66,7 +66,7 @@ Repeat without the `--stdout` flag and you'll find the generated files in `_outp
 ----
 $ bundle exec liquidoc -d _data/data-sample.yml -t _templates/liquid/tpl-sample.asciidoc -o sample.adoc
 ----
-+
+
 [TIP]
 Add `--verbose` to see the steps LiquiDoc is taking.
 
