@@ -1,0 +1,5 @@
+NOTICE OF THIRD PARTY SOFTWARE DEPENDENCIES FOR LIQUIDOC
+
+The LiquiDoc gem/package incorporates code from third-party dependencies released under permissive open source licenses.
+
+Where only part of a third-party dependency is included in LiquiDoc source code, licensing and attribution are handled inline.
