@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
       "public gem pushes."
   end
 
-  spec.files         = ["lib/liquidoc.rb"]
+  spec.files         = spec.files = Dir['lib/**/*.rb']
   spec.bindir        = "bin"
   spec.executables   = ["liquidoc"]
   spec.require_paths = ["lib"]
