@@ -54,19 +54,24 @@ These definitions can be command-line options, or they can be instructed by pres
 
 Give LiquiDoc (1) any proper YAML or JSON data file and (2) a template mapping any of the data to token variables with Liquid markup, and LiquiDoc returns STDOUT feedback or writes a new file (or multiple files) based on that template.
 
-.Example -- Generate sample output
+.Example -- Generate sample output to file
 ----
 $ bundle exec liquidoc --verbose
 ----
 +
 Check `_output/` for new files based on the files reported in the logs.
 
+.Example -- Generate sample output to screen
+----
+$ bundle exec liquidoc --stdout
+----
+
 .Example -- Generate Rocana sample output with configuration
 ----
 $ bundle exec liquidoc -c configs/cfg-sample.yml
 ----
 
-.Example -- Generate output from files passed to CLI
+.Example -- Generate output from files passed as CLI arguments
 ----
 $ bundle exec liquidoc -d _data/data-sample.yml -t _templates/liquid/tpl-sample.asciidoc -o sample.adoc
 ----
@@ -96,6 +101,6 @@ For instance, take data from a YAML file and use a Liquid template to create an 
 
 === Output
 
-After this parsing, files are built in any of the given output formats.
+After this parsing, files are written in any of the given output formats, or else just printed to screen as STDOUT (when you add the `--stdout` flag to your command).
 Liquid templates can be used to produce any flat-file format imaginable.
 Just format valid syntax with your source data and Liquid template, then save with the proper extension, and you're all set.
