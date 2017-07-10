@@ -33,6 +33,7 @@ See https://www.ruby-lang.org/en/downloads/[Ruby downloads] if you're on Windows
 
 . Populate the file with LiquiDoc dependencies.
 +
+.A LiquiDoc project Gemfile
 [source,ruby]
 ----
 source 'https://rubygems.org'
@@ -56,7 +57,7 @@ Give LiquiDoc (1) any proper YAML or JSON data file and (2) a template mapping a
 
 .Example -- Generate sample output from files established in a configuration
 ----
-$ bundle exec liquidoc -c configs/cfg-sample.yml --stdout
+$ bundle exec liquidoc -c _configs/cfg-sample.yml --stdout
 ----
 
 [TIP]
