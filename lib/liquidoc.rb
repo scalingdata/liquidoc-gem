@@ -86,7 +86,7 @@ def config_build config_file
     else
       @logger.error "Problem loading config file. Exiting."
     end
-    exit
+    raise "An exception has occurred."
   end
   validate_config_structure(config)
   if config['compile']
@@ -135,16 +135,21 @@ def validate_file_input file, type
     @logger.debug "Input file validated for #{type} file #{file}."
   else
     @logger.error error
-    exit
+    raise "An exception has occurred."
   end
 end
 
 def validate_config_structure config
-  unless config['publish'] or config['compile']
-    @logger.error "Config file must have at least one top-level section named 'publish:' or 'compile:'."
-    exit
+  unless config.is_a? Hash
+    @logger.error "The configuration file is not properly structured."
+    raise
+  else
+    unless config['publish'] or config['compile']
+      @logger.error "Config file must have at least one top-level section named 'publish:' or 'compile:'."
+      exit
+    end
   end
-  # TODO More validations for config hash structure
+# TODO More validation needed
 end
 
 # ===
@@ -164,7 +169,7 @@ def liquify data_file, template_file, output_file
   rescue Exception => ex
     @logger.error "Problem rendering Liquid template. #{template_file}\n" \
     "#{ex.class} thrown. #{ex.message}"
-    exit
+    raise "An exception has occurred."
   end
   unless @output_type == "STDOUT"
     begin
