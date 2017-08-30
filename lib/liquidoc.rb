@@ -86,7 +86,7 @@ def config_build config_file
     else
       @logger.error "Problem loading config file. Exiting."
     end
-    exit
+    raise "Could not load #{config_file}"
   end
   validate_config_structure(config)
   if config['compile']
@@ -134,17 +134,22 @@ def validate_file_input file, type
   unless error
     @logger.debug "Input file validated for #{type} file #{file}."
   else
-    @logger.error error
-    exit
+    @logger.error
+    raise "Could not validate file input: #{error}"
   end
 end
 
 def validate_config_structure config
-  unless config['publish'] or config['compile']
-    @logger.error "Config file must have at least one top-level section named 'publish:' or 'compile:'."
-    exit
+  unless config.is_a? Hash
+    message =  "The configuration file is not properly structured; it is not a Hash"
+    @logger.error message
+    raise message
+  else
+    unless config['publish'] or config['compile']
+      raise "Config file must have at least one top-level section named 'publish:' or 'compile:'."
+    end
   end
-  # TODO More validations for config hash structure
+# TODO More validation needed
 end
 
 # ===
@@ -162,9 +167,10 @@ def liquify data_file, template_file, output_file
     template = Liquid::Template.parse(template) # compiles template
     rendered = template.render(data) # renders the output
   rescue Exception => ex
-    @logger.error "Problem rendering Liquid template. #{template_file}\n" \
-    "#{ex.class} thrown. #{ex.message}"
-    exit
+    message = "Problem rendering Liquid template. #{template_file}\n" \
+      "#{ex.class} thrown. #{ex.message}"
+    @logger.error message
+    raise message
   end
   unless @output_type == "STDOUT"
     begin
