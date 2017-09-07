@@ -8,6 +8,7 @@ Gem::Specification.new do |spec|
   spec.version       = Liquidoc::VERSION
   spec.authors       = ["Brian Dominick"]
   spec.email         = ["badominick@gmail.com"]
+  spec.license       = "MIT"
 
   spec.summary       = %q{A highly configurable command-line tool for parsing data and content in common flat-file formats.}
   spec.description   = %q{LiquiDoc conveniently harnesses the power of Liquid templates, flat-file data formats such as YAML, JSON, XML, and CSV, as well as AsciiDoc markup and powerful Asciidoctor output capabilities -- all in a single command-line tool.}
