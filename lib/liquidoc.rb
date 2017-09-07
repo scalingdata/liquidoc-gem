@@ -64,7 +64,8 @@ def get_data data_file
         output[i] = row.to_hash
         i = i+1
       end
-      return {data: output}
+      output = {"data" => output}
+      return output
     rescue
       @logger.error "The CSV format is invalid."
     end
