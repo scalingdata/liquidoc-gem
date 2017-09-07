@@ -37,6 +37,9 @@ gem 'logger'
 gem 'crack'
 gem 'liquidoc'
 ----
++
+[TIP]
+This file is included in the link:https://github.com/briandominick/liquidoc-boilerplate[LiquiDoc boilerplate files].
 
 . Run `bundle install` to prepare dependencies.
 
