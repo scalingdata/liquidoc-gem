@@ -1,26 +1,18 @@
 = LiquiDoc
 
-LiquiDoc is a system for true single-sourcing of content in flat files with various output requirements.
-The command-line utility engages templating systems to parse data into rich text.
+LiquiDoc is a system for true single-sourcing of content and data in flat files with various output requirements.
+The command-line utility engages templating systems to parse data into rich text output.
 
-Sources can (or soon will be able to) be flat files formatted in:
-
-* JSON
-* YAML
-* XML
-* CSV
-* Markdown
-* AsciiDoc
+Sources can be flat files formatted in formats such as XML (eXtensible Markup Language), JSON (JavaScript Object Notation), CSV (comma-separated values), and our preferred human-editable format: YAML (Who knows).
 
 Output can (or will) be pretty much any flat file, including semi-structured data like JSON and XML, as well as rich text/multimedia formats like HTML, PDF, slide decks, and more.
 
 == Purpose
 
-The general purpose of this tool is for building documentation from semi-structured or mixed data parsed into secondary markup languages, usually for output as rich text media.
-For example, store data in YAML files, template your output using Liquid and AsciiDoc, and export as HTML, PDF, ePub, or even slide presentations.
-This facilitates a programmatic, "docs-as-code" approach to technical documentation projects, where docs are single-sourced and share the same codebase/repo as the main product.
+The general purpose of this tool is for building documentation from semi-structured or mixed data parsed into secondary markup languages, usually for output as rich text media, or simply as an alternate semi-structured format.
+Unlike tools that are mere converters, LiquiDoc can be configured to perform multiple operations at once for generating content from multiple data source files, each output in various formats based on distinct templates.
 
-The tool currently provides for configuring build jobs, with extensibility coming soon.
+The tool currently provides for very basic configuration of build jobs, with extensibility coming soon, including a secondary publish function for generating link:http://asciidoctor.org/[Asciidoctor] output from data-driven AsciiDoc files.
 
 == Installation
 
@@ -53,7 +45,11 @@ gem 'liquidoc'
 LiquiDoc provides a Ruby command-line tool for processing source files into new text files based on templates you define.
 These definitions can be command-line options, or they can be instructed by preset configurations you define in separate configuration files.
 
-Give LiquiDoc (1) any proper YAML or JSON data file and (2) a template mapping any of the data to token variables with Liquid markup, and LiquiDoc returns STDOUT feedback or writes a new file (or multiple files) based on that template.
+[TIP]
+.Quickstart
+If you want to test the tool out with dummy data and templates, clone link:https://github.com/briandominick/liquidoc-boilerplate[this boilerplate repo] and run the suggested commands.
+
+Give LiquiDoc (1) any proper YAML, JSON, XML, or CSV (with header row) data file and (2) a template mapping any of the data to token variables with Liquid markup -- LiquiDoc returns STDOUT feedback or writes a new file (or multiple files) based on that template.
 
 .Example -- Generate sample output from files established in a configuration
 ----
@@ -71,31 +67,25 @@ $ bundle exec liquidoc -d _data/data-sample.yml -t _templates/liquid/tpl-sample.
 [TIP]
 Add `--verbose` to see the steps LiquiDoc is taking.
 
-=== Sources
-
-Files in the following formats can be used as documentation sources.
-
-* Markdown
-* AsciiDoc
-* YAML
-* JSON
-* XML
-
 === Templates
 
-Both AsciiDoc and Liquid can be treated as templating languages in LiquiDoc.
+LiquiDoc will add the powers of Asciidoctor in a future release, enabling initial reformatting of complex source data _into_ AsciiDoc format using Liquid templates, followed by final publishing into rich formats such as PDF, HTML, and even slide presentations.
 
-*AsciiDoc* is used when the variable content of the template is minimal, and the static text is maximal.
-For instance, a book chapter that contains a few variables depending on whether the book is for Windows or MacOS.
-
-*Liquid* is used for complex, variable data, typically for looped output.
-For instance, a list (array) of glossary terms and definitions that need to be looped over and pressed into a cleaner markup, such as Markdown, AsciiDoc, or HTML.
-
-You may also use these templates *in combination*.
-For instance, take data from a YAML file and use a Liquid template to create an AsciiDoc file containing the complex data, then build that file into HTML, PDF, or a slide presentation.
+link:https://help.shopify.com/themes/liquid/basics[*Liquid*] is used for complex variable data, typically for iterated output.
+For instance, an array of glossary terms and definitions that needs to be looped over and pressed into a more publish-ready markup, such as Markdown, AsciiDoc, reStructuredText, LaTeX, or HTML.
 
 === Output
 
 After this parsing, files are written in any of the given output formats, or else just printed to screen as STDOUT (when you add the `--stdout` flag to your command).
 Liquid templates can be used to produce any flat-file format imaginable.
 Just format valid syntax with your source data and Liquid template, then save with the proper extension, and you're all set.
+
+== Contributing
+
+Contributions are open and welcome.
+This repo is maintained by Rocana's documentation manager, who taught himself basic Ruby scripting just to build LiquiDoc and related tooling.
+Instructional pull requests are encouraged!
+
+== License
+
+LiquiDoc is provided by Rocana, Inc under the MIT License.
