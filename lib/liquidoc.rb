@@ -348,7 +348,7 @@ command_parser = OptionParser.new do|opts|
     @data_file = @base_dir + n
   end
 
-  opts.on("-f PATH", "--from=PATH", "Directory to copy assets from. Defaults to #{@assets_from_dir_def}" ) do |n|
+  opts.on("-f PATH", "--from=PATH", "Directory to copy assets from." ) do |n|
     @attributes_file = n
   end
 
