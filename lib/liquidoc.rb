@@ -156,10 +156,10 @@ def config_build config_file
       data = src['data']
       for cfgn in src['builds']
         template = @base_dir + cfgn['template']
-        unless cfgn['output'] == "STDOUT" or @output_type == "STDOUT"
+        unless cfgn['output'].downcase == "stdout"
           output = @base_dir + cfgn['output']
         else
-          output = "STDOUT"
+          output = "stdout"
         end
         liquify(data, template, output)
       end
@@ -219,8 +219,8 @@ end
 # ===
 
 # Parse given data using given template, saving to given filename
-def liquify data, template_file, output_file
-  @logger.debug "Executing... liquify parsing operation on data file: #{data['file']}, template #{template_file}, to #{output_file}."
+def liquify data, template_file, output
+  @logger.debug "Executing... liquify parsing operation on data file: #{data['file']}, template #{template_file}, to #{output}."
   validate_file_input(data['file'], "data")
   validate_file_input(template_file, "template")
   data = get_data(data) # gathers the data
@@ -234,7 +234,8 @@ def liquify data, template_file, output_file
     @logger.error message
     raise message
   end
-  unless @output_type == "STDOUT"
+  unless output.downcase == "stdout"
+    output_file = output
     begin
       Dir.mkdir(@output_dir) unless File.exists?(@output_dir)
       File.open(output_file, 'w') { |file| file.write(rendered) } # saves file
@@ -430,7 +431,7 @@ command_parser = OptionParser.new do|opts|
   end
 
   opts.on("--stdout", "Puts the output in STDOUT instead of writing to a file.") do
-    @output_type = "STDOUT"
+    @output_type = "stdout"
   end
 
   opts.on("-h", "--help", "Returns help.") do
