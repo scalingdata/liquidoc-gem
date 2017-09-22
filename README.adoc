@@ -139,7 +139,7 @@ When you've established a configuration file, you can call it with the argument 
 === Data Sources
 
 Valid data sources come in a few different types.
-There are the built-in data types (YAML, JSON, XML, CSV) vs free-form types (files processed using regular expressions, designated the `regex` data type).
+There are the built-in data types (YAML, JSON, XML, CSV) vs free-form type (files processed using regular expressions, designated the `regex` data type).
 There is also a divide between simple one-record-per-line data types (CSV and regex), which produce one record per line, vs nested data types that have far more complex structures.
 
 === Native Nested Data (YAML, JSON, XML)
