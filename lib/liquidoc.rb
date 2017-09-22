@@ -35,28 +35,50 @@ end
 # ===
 
 # Pull in a semi-structured data file, converting contents to a Ruby hash
-def get_data data_file
-  case File.extname(data_file)
-  when ".yml"
+def get_data data
+  if data.class == "string"
+    data_file = data
+  else
+    begin
+      data_file = data['file']
+      if data['type']
+        parse_type = data['type']
+      end
+      if data['pattern']
+        pattern = data['pattern']
+      end
+    rescue
+      @logger.error "Improper values in 'data:' section of configuration."
+      raise "Config format error"
+    end
+  end
+  if parse_type
+    type = parse_type
+  else # get the file extension, drop the dot
+    type = File.extname(data_file)
+    type[0] = ""
+  end
+  case type
+  when "yml"
     begin
       return YAML.load_file(data_file)
     rescue Exception => ex
       @logger.error "There was a problem with the data file. #{ex.message}"
     end
-  when ".json"
+  when "json"
     begin
       return JSON.parse(File.read(data_file))
     rescue Exception => ex
       @logger.error "There was a problem with the data file. #{ex.message}"
     end
-  when ".xml"
+  when "xml"
     begin
       data = Crack::XML.parse(File.read(data_file))
       return data['root']
     rescue Exception => ex
       @logger.error "There was a problem with the data file. #{ex.message}"
     end
-  when ".csv"
+  when "csv"
     output = []
     i = 0
     begin
@@ -69,13 +91,52 @@ def get_data data_file
     rescue
       @logger.error "The CSV format is invalid."
     end
+  when "regex"
+    if pattern
+      return parse_regex(data_file, pattern)
+    else
+      @logger.error "You must supply a regex pattern with your free-form data file."
+      raise "Missing regex pattern"
+    end
   else
-    @logger.error "The data file is an invalid type. Allowed: .yml, .json, .xml, and .csv."
+    unless parse_type
+      @logger.error "The data file cannot be parsed unless it is in a recognized format: .yml, .json, .xml, or .csv. Alternatively, you may use regular experessions to capture data from free-form files."
+    else
+      @logger.error "The declared parse type for your data file is unknown. Must be yml, json, xml, csv, or regex."
+    end
   end
 end
 
+def parse_regex data_file, pattern
+  records = []
+  pattern_re = /#{pattern}/
+  @logger.debug "Using regular expression #{pattern} to parse data file."
+  groups = pattern_re.names
+  begin
+    File.open(data_file, "r") do |file_proc|
+      file_proc.each_line do |row|
+        if row.length > 3 # ignore inherently invalid lines
+          matches = row.match(pattern_re)
+          if matches
+            row_h = {}
+            groups.each do |var| # loop over the named groups, adding their key & value to the row_h hash
+              row_h.merge! var => matches[var]
+            end
+            records << row_h # add the row to the records array
+          end
+        end
+      end
+    end
+    output = {"data" => records}
+  rescue Exception => ex
+    @logger.error "Something went wrong trying to parse the free-form file. #{ex.class} thrown. #{ex.message}"
+    raise "Freeform parse error"
+  end
+  return output
+end
+
 # Establish source, template, index, etc details for build jobs from a config file
-# TODO This needs to be turned into a Class?
+# TODO This needs to be tur ed into a Class?
 def config_build config_file
   @logger.debug "Using config file #{config_file}."
   validate_file_input(config_file, "config")
@@ -92,7 +153,7 @@ def config_build config_file
   validate_config_structure(config)
   if config['compile']
     for src in config['compile']
-      data = @base_dir + src['data']
+      data = src['data']
       for cfgn in src['builds']
         template = @base_dir + cfgn['template']
         unless cfgn['output'] == "STDOUT" or @output_type == "STDOUT"
@@ -158,11 +219,11 @@ end
 # ===
 
 # Parse given data using given template, saving to given filename
-def liquify data_file, template_file, output_file
-  @logger.debug "Executing... liquify parsing operation on data file: #{data_file}, template #{template_file}, to #{output_file}."
-  validate_file_input(data_file, "data")
+def liquify data, template_file, output_file
+  @logger.debug "Executing... liquify parsing operation on data file: #{data['file']}, template #{template_file}, to #{output_file}."
+  validate_file_input(data['file'], "data")
   validate_file_input(template_file, "template")
-  data = get_data(data_file) # gathers the data
+  data = get_data(data) # gathers the data
   begin
     template = File.read(template_file) # reads the template file
     template = Liquid::Template.parse(template) # compiles template
