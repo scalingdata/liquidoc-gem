@@ -97,7 +97,7 @@ def get_data data
 end
 
 # Establish source, template, index, etc details for build jobs from a config file
-# TODO This needs to be tur ed into a Class?
+# TODO This needs to be turned into a Class?
 def config_build config_file
   @logger.debug "Using config file #{config_file}."
   validate_file_input(config_file, "config")
@@ -196,15 +196,13 @@ def parse_regex data_file, pattern
   begin
     File.open(data_file, "r") do |file_proc|
       file_proc.each_line do |row|
-        if row.length > 3 # ignore inherently invalid lines
-          matches = row.match(pattern_re)
-          if matches
-            row_h = {}
-            groups.each do |var| # loop over the named groups, adding their key & value to the row_h hash
-              row_h.merge! var => matches[var]
-            end
-            records << row_h # add the row to the records array
+        matches = row.match(pattern_re)
+        if matches
+          row_h = {}
+          groups.each do |var| # loop over the named groups, adding their key & value to the row_h hash
+            row_h.merge!(var => matches[var])
           end
+          records << row_h # add the row to the records array
         end
       end
     end
