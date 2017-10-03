@@ -36,44 +36,39 @@ end
 
 # Pull in a semi-structured data file, converting contents to a Ruby hash
 def get_data data
-  if data.class == "string"
-    data_file = data
-  else
-    begin
-      data_file = data['file']
-      if data['type']
-        parse_type = data['type']
-      end
-      if data['pattern']
-        pattern = data['pattern']
-      end
-    rescue
-      @logger.error "Improper values in 'data:' section of configuration."
-      raise "Config format error"
+  # data must be a hash produced by data_hashify()
+  if data['type']
+    if data['type'].downcase == "yaml"
+      data['type'] = "yml"
     end
+    unless data['type'].downcase.match(/yml|json|xml|csv|regex/)
+      @logger.error "Declared data type must be one of: yaml, json, xml, csv, or regex."
+      raise "DataTypeUnrecognized"
+    end
+  else
+    unless data['ext'].match(/\.yml|\.json|\.xml|\.csv/)
+      @logger.error "Data file extension must be one of: .yml, .json, .xml, or .csv or else declared in config file."
+      raise "FileExtensionUnknown (#{data[ext]})"
+    end
+    data['type'] = data['ext']
+    data['type'].slice!(0) # removes leading dot char
   end
-  if parse_type
-    type = parse_type
-  else # get the file extension, drop the dot
-    type = File.extname(data_file)
-    type[0] = ""
-  end
-  case type
+  case data['type']
   when "yml"
     begin
-      return YAML.load_file(data_file)
+      return YAML.load_file(data['file'])
     rescue Exception => ex
       @logger.error "There was a problem with the data file. #{ex.message}"
     end
   when "json"
     begin
-      return JSON.parse(File.read(data_file))
+      return JSON.parse(File.read(data['file']))
     rescue Exception => ex
       @logger.error "There was a problem with the data file. #{ex.message}"
     end
   when "xml"
     begin
-      data = Crack::XML.parse(File.read(data_file))
+      data = Crack::XML.parse(File.read(data['file']))
       return data['root']
     rescue Exception => ex
       @logger.error "There was a problem with the data file. #{ex.message}"
@@ -82,7 +77,7 @@ def get_data data
     output = []
     i = 0
     begin
-      CSV.foreach(data_file, headers: true, skip_blanks: true) do |row|
+      CSV.foreach(data['file'], headers: true, skip_blanks: true) do |row|
         output[i] = row.to_hash
         i = i+1
       end
@@ -92,47 +87,13 @@ def get_data data
       @logger.error "The CSV format is invalid."
     end
   when "regex"
-    if pattern
-      return parse_regex(data_file, pattern)
+    if data['pattern']
+      return parse_regex(data['file'], data['pattern'])
     else
       @logger.error "You must supply a regex pattern with your free-form data file."
-      raise "Missing regex pattern"
-    end
-  else
-    unless parse_type
-      @logger.error "The data file cannot be parsed unless it is in a recognized format: .yml, .json, .xml, or .csv. Alternatively, you may use regular experessions to capture data from free-form files."
-    else
-      @logger.error "The declared parse type for your data file is unknown. Must be yml, json, xml, csv, or regex."
+      raise "MissingRegexPattern"
     end
   end
-end
-
-def parse_regex data_file, pattern
-  records = []
-  pattern_re = /#{pattern}/
-  @logger.debug "Using regular expression #{pattern} to parse data file."
-  groups = pattern_re.names
-  begin
-    File.open(data_file, "r") do |file_proc|
-      file_proc.each_line do |row|
-        if row.length > 3 # ignore inherently invalid lines
-          matches = row.match(pattern_re)
-          if matches
-            row_h = {}
-            groups.each do |var| # loop over the named groups, adding their key & value to the row_h hash
-              row_h.merge! var => matches[var]
-            end
-            records << row_h # add the row to the records array
-          end
-        end
-      end
-    end
-    output = {"data" => records}
-  rescue Exception => ex
-    @logger.error "Something went wrong trying to parse the free-form file. #{ex.class} thrown. #{ex.message}"
-    raise "Freeform parse error"
-  end
-  return output
 end
 
 # Establish source, template, index, etc details for build jobs from a config file
@@ -165,7 +126,7 @@ def config_build config_file
       end
     end
   end
-  if config['publish']
+  if config['publish
     begin
       for pub in config['publish']
         for bld in pub['builds']
@@ -187,7 +148,7 @@ def validate_file_input file, type
   @logger.debug "Validating input file for #{type} file #{file}"
   error = false
   unless file.is_a?(String) and !file.nil?
-    error = "The #{type} file (#{file}) is not valid."
+    error = "The #{type} filename (#{file}) is not valid."
   else
     unless File.exists?(file)
       error = "The #{type} file (#{file}) was not found."
@@ -196,14 +157,14 @@ def validate_file_input file, type
   unless error
     @logger.debug "Input file validated for #{type} file #{file}."
   else
-    @logger.error
-    raise "Could not validate file input: #{error}"
+    @logger.error "Could not validate input file: #{error}"
+    raise "InvalidInput"
   end
 end
 
 def validate_config_structure config
   unless config.is_a? Hash
-    message =  "The configuration file is not properly structured; it is not a Hash"
+    message =  "The configuration file is not properly structured; it is not a hash"
     @logger.error message
     raise message
   else
@@ -214,13 +175,55 @@ def validate_config_structure config
 # TODO More validation needed
 end
 
+def data_hashify data_var
+  # TODO make datasource config a class
+  if data_var.is_a?(String)
+    data = {}
+    data['file'] = data_var
+    data['ext'] = File.extname(data_var)
+  else # add ext to the hash
+    data = data_var
+    data['ext'] = File.extname(data['file'])
+  end
+  return data
+end
+
+def parse_regex data_file, pattern
+  records = []
+  pattern_re = /#{pattern}/
+  @logger.debug "Using regular expression #{pattern} to parse data file."
+  groups = pattern_re.names
+  begin
+    File.open(data_file, "r") do |file_proc|
+      file_proc.each_line do |row|
+        if row.length > 3 # ignore inherently invalid lines
+          matches = row.match(pattern_re)
+          if matches
+            row_h = {}
+            groups.each do |var| # loop over the named groups, adding their key & value to the row_h hash
+              row_h.merge! var => matches[var]
+            end
+            records << row_h # add the row to the records array
+          end
+        end
+      end
+    end
+    output = {"data" => records}
+  rescue Exception => ex
+    @logger.error "Something went wrong trying to parse the free-form file. #{ex.class} thrown. #{ex.message}"
+    raise "Freeform parse error"
+  end
+  return output
+end
+
 # ===
 # Liquify BUILD methods
 # ===
 
 # Parse given data using given template, saving to given filename
 def liquify data, template_file, output
-  @logger.debug "Executing... liquify parsing operation on data file: #{data['file']}, template #{template_file}, to #{output}."
+  @logger.debug "Executing liquify parsing operation."
+  data = data_hashify(data)
   validate_file_input(data['file'], "data")
   validate_file_input(template_file, "template")
   data = get_data(data) # gathers the data
