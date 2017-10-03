@@ -126,7 +126,7 @@ def config_build config_file
       end
     end
   end
-  if config['publish
+  if config['publish']
     begin
       for pub in config['publish']
         for bld in pub['builds']
